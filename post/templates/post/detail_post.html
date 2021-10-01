@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block content %}
+    <b>{{ post.user|title }}</b><br><br>
+    <p>{{ post.body|title }}</p>
+    <small>{{ post.created_at }}</small><br><br>
+    {% if request.user == post.user %}
+        <a href="{% url 'post:delete_post' post.id %}" class='btn btn-danger'>Delete</a>
+        <a href="{% url 'post:edit_post' post.id post.user.id %}" class='btn btn-warning'>Edit</a>
+        <br>
+    {% endif %}
+    <br><hr>
+    <h5>Comments:</h5>
+    <small>{{comments.count}} comment</small><br><br>
+    {% if request.user.is_authenticated %}
+        <form action="" method="post">
+            {% csrf_token %}{{ form.as_p }}
+            <input type="submit" value="send" class="btn btn-success">
+        </form><br><hr>
+    {% else %}
+    <p>If you like write comment you need to login or register</p>
+    <hr>
+    {% endif %}
+    {% for comment in comments %}
+    <br>
+        <div class="card bg-dark text-light">
+            <div class="card-body">
+            <h5 class="card-title">{{ comment.user }}</h5>
+            <h6 class="card-subtitle mb-2 text-muted">{{ comment.created_at }}</h6>
+            <p class="card-text">{{ comment.body }}</p>
+            </div>
+            {% if request.user.is_authenticated %}
+                <form  action="{% url 'post:add_reply' comment.id post.id %}" method="post">
+                    {% csrf_token %} {{ form.as_p }}
+                    <input type="submit" value="send" class="btn btn-secondary">
+                </form>
+            {% endif %}
+            {% for reply in comment.rcomment.all %}
+            <div class="card text-dark">
+                <div class="card-body">
+                    <h6 class="card-title">{{ reply.user }} to {{ comment.user }}:</h6>
+                    <p class="card-text">{{ reply.body }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% endfor %}
+{% endblock %}
